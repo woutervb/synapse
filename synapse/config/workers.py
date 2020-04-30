@@ -71,6 +71,14 @@ class WorkerConfig(Config):
                 elif not bind_addresses:
                     bind_addresses.append("")
 
+        self.writers = {
+            "events": "master",
+        }
+        self.writers.update(config.get("writers", {}) or {})
+
+        # We only support one 'events' writer
+        assert len(self.writers) == 1
+
     def read_arguments(self, args):
         # We support a bunch of command line arguments that override options in
         # the config. A lot of these options have a worker_* prefix when running
