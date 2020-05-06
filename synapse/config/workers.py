@@ -76,6 +76,8 @@ class WorkerConfig(Config):
         }
         self.writers.update(config.get("writers", {}) or {})
 
+        self.instance_map = config.get("instance_map", {}) or {}
+
         # We only support one 'events' writer
         assert len(self.writers) == 1
 
