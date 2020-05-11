@@ -27,7 +27,9 @@ from synapse.metrics.background_process_metrics import run_as_background_process
 from synapse.replication.tcp.protocol import ServerReplicationStreamProtocol
 from synapse.replication.tcp.streams import (
     STREAMS_MAP,
+    BackfillStream,
     CachesStream,
+    EventsStream,
     FederationStream,
     Stream,
 )
@@ -86,6 +88,10 @@ class ReplicationStreamer(object):
         # All workers can write to the cache invalidation stream.
         self.streams.append(CachesStream(hs))
 
+        if hs.config.worker.writers["events"] == hs.get_instance_name():
+            self.streams.append(EventsStream(hs))
+            self.streams.append(BackfillStream(hs))
+
         if hs.config.worker_app is None:
             for stream in STREAMS_MAP.values():
                 if stream == FederationStream and hs.config.send_federation:
@@ -93,8 +99,8 @@ class ReplicationStreamer(object):
                     # has been disabled on the master.
                     continue
 
-                if stream == CachesStream:
-                    # We've already added it above.
+                if stream in (EventsStream, BackfillStream, CachesStream):
+                    # We add these separately.
                     continue
 
                 self.streams.append(stream(hs))
