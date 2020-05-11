@@ -69,6 +69,8 @@ class ReplicationCommandHandler:
         self._instance_id = hs.get_instance_id()
         self._instance_name = hs.get_instance_name()
 
+        self.hs = hs
+
         self._streams = {
             stream.NAME: stream(hs) for stream in STREAMS_MAP.values()
         }  # type: Dict[str, Stream]
@@ -153,16 +155,16 @@ class ReplicationCommandHandler:
             hs.get_reactor().connectTCP(host, port, self._factory)
 
     async def on_REPLICATE(self, conn: AbstractConnection, cmd: ReplicateCommand):
-        # We only want to announce positions by the writer of the streams.
-        # Currently this is just the master process.
-        if not self._is_master:
-            return
-
-        for stream_name, stream in self._streams.items():
-            current_token = stream.current_token(self._instance_name)
+        for stream in self.hs.get_replication_streamer().streams:
             self.send_command(
-                PositionCommand(stream_name, self._instance_name, current_token)
+                PositionCommand(
+                    stream.NAME,
+                    self._instance_name,
+                    stream.current_token(self._instance_name),
+                )
             )
+
+        return
 
     async def on_USER_SYNC(self, conn: AbstractConnection, cmd: UserSyncCommand):
         user_sync_counter.inc()
