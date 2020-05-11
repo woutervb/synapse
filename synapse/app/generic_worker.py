@@ -117,6 +117,7 @@ from synapse.rest.client.v2_alpha.register import RegisterRestServlet
 from synapse.rest.client.versions import VersionsRestServlet
 from synapse.rest.key.v2 import KeyApiV2Resource
 from synapse.server import HomeServer
+from synapse.storage.data_stores.main.censor_events import CensorEventsStore
 from synapse.storage.data_stores.main.media_repository import MediaRepositoryStore
 from synapse.storage.data_stores.main.monthly_active_users import (
     MonthlyActiveUsersWorkerStore,
@@ -438,6 +439,7 @@ class GenericWorkerSlavedStore(
     SlavedGroupServerStore,
     SlavedAccountDataStore,
     SlavedPusherStore,
+    CensorEventsStore,
     SlavedEventStore,
     SlavedKeyStore,
     RoomStore,
